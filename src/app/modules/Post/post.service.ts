@@ -26,8 +26,9 @@ const createPostIntoDB = async (body: any, featuredImage: any) => {
 
 
 
-const getPostsFromDB = async (id?: string) => {
-    if (id) {
+const getPostsFromDB = async (id?: string | null) => {
+    console.log(id)
+    if (id !== null && id !== '') {
         const post = await Post.findById(id);
         if (!post) throw new Error("Post not found");
         return post;
