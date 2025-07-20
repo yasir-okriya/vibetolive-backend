@@ -2,6 +2,7 @@ import cors from 'cors';
 import express, { Application, Request, Response } from 'express';
 import router from './app/routes';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
+import path from 'path';
 
 
 const app: Application = express();
@@ -9,6 +10,9 @@ const app: Application = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 app.use('/api', router);
 

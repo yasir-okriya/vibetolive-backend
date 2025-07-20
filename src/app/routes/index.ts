@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ProductRoutes } from '../modules/Product/product.route';
+import { PostRoutes } from '../modules/Post/post.route';
 
 
 
@@ -7,8 +7,8 @@ const router = Router();
 
 const moduleRoutes = [
     {
-        path: '/product',
-        route: ProductRoutes
+        path: '/post',
+        route: PostRoutes
     },
 
 ];
