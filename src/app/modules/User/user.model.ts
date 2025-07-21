@@ -32,11 +32,11 @@ const userSchema = new Schema<IUser, UserModel>(
         },
         is_staff: {
             type: Boolean,
-            default: false,
+            default: true,
         },
         is_superuser: {
             type: Boolean,
-            default: false,
+            default: true,
         },
     },
     {

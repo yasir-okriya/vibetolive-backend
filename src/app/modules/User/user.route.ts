@@ -2,12 +2,13 @@ import express from 'express';
 import validateRequest from '../../middlewares/validateRequests';
 import { UserValidation } from './user.validation';
 import { UserControllers } from './user.controller';
+import adminAuth from '../../middlewares/adminAuth';
 
 
 
 const router = express.Router();
 
-router.post('/register',
+router.post('/register', adminAuth({ is_staff: true, is_superuser: true }),
     validateRequest(UserValidation.userValidationSchema),
     UserControllers.userRegister);
 
