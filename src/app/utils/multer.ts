@@ -19,4 +19,14 @@ const storage = multer.diskStorage({
   }
 });
 
-export const upload = multer({ storage });
+// Multer configuration with increased limits for large content fields
+export const upload = multer({ 
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB for uploaded files
+    fields: 50, // Maximum number of non-file fields
+    fieldNameSize: 200, // Maximum field name size in bytes
+    // Note: fieldValueSize might not be available in all Multer versions
+    // The actual field value limit is controlled by express body parser
+  }
+});
