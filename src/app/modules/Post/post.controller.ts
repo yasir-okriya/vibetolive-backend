@@ -2,11 +2,38 @@ import httpStatus from "http-status";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { PostServices } from "./post.service";
+import { isMemoryStorage } from "../../utils/multer";
+import { uploadToCloudinary, isCloudinaryConfigured } from "../../utils/cloudinary";
 
 
 const createPost = catchAsync(async (req, res) => {
     const body = req.body;
-    const featuredImage = req.file?.filename || undefined;
+    let featuredImage: string | undefined = undefined;
+
+    if (req.file) {
+        if (isMemoryStorage) {
+            // In serverless, upload to Cloudinary if configured, otherwise use base64
+            if (isCloudinaryConfigured()) {
+                try {
+                    featuredImage = await uploadToCloudinary(req.file.buffer, 'blog-featured');
+                } catch (error) {
+                    console.error('Cloudinary upload failed:', error);
+                    // Fallback to base64 if Cloudinary fails
+                    const base64 = req.file.buffer.toString('base64');
+                    const mimeType = req.file.mimetype;
+                    featuredImage = `data:${mimeType};base64,${base64}`;
+                }
+            } else {
+                // Fallback to base64 if Cloudinary not configured
+                const base64 = req.file.buffer.toString('base64');
+                const mimeType = req.file.mimetype;
+                featuredImage = `data:${mimeType};base64,${base64}`;
+            }
+        } else {
+            // In local/dev, use filename
+            featuredImage = req.file.filename;
+        }
+    }
 
     const result = await PostServices.createPostIntoDB(body, featuredImage);
 
@@ -58,8 +85,30 @@ const uploadImage = catchAsync(async (req, res) => {
         return;
     }
 
-    // Return the image URL
-    const imageUrl = `/uploads/${req.file.filename}`;
+    let imageUrl: string;
+    
+    if (isMemoryStorage) {
+        // In serverless, upload to Cloudinary if configured
+        if (isCloudinaryConfigured()) {
+            try {
+                imageUrl = await uploadToCloudinary(req.file.buffer, 'blog-content');
+            } catch (error) {
+                console.error('Cloudinary upload failed:', error);
+                // Fallback to base64 if Cloudinary fails
+                const base64 = req.file.buffer.toString('base64');
+                const mimeType = req.file.mimetype;
+                imageUrl = `data:${mimeType};base64,${base64}`;
+            }
+        } else {
+            // Fallback to base64 if Cloudinary not configured
+            const base64 = req.file.buffer.toString('base64');
+            const mimeType = req.file.mimetype;
+            imageUrl = `data:${mimeType};base64,${base64}`;
+        }
+    } else {
+        // In local/dev, use file path
+        imageUrl = `/uploads/${req.file.filename}`;
+    }
     
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -72,7 +121,32 @@ const uploadImage = catchAsync(async (req, res) => {
 const updatePost = catchAsync(async (req, res) => {
     const { id } = req.params;
     const body = req.body;
-    const featuredImage = req.file?.filename || undefined;
+    let featuredImage: string | undefined = undefined;
+
+    if (req.file) {
+        if (isMemoryStorage) {
+            // In serverless, upload to Cloudinary if configured
+            if (isCloudinaryConfigured()) {
+                try {
+                    featuredImage = await uploadToCloudinary(req.file.buffer, 'blog-featured');
+                } catch (error) {
+                    console.error('Cloudinary upload failed:', error);
+                    // Fallback to base64 if Cloudinary fails
+                    const base64 = req.file.buffer.toString('base64');
+                    const mimeType = req.file.mimetype;
+                    featuredImage = `data:${mimeType};base64,${base64}`;
+                }
+            } else {
+                // Fallback to base64 if Cloudinary not configured
+                const base64 = req.file.buffer.toString('base64');
+                const mimeType = req.file.mimetype;
+                featuredImage = `data:${mimeType};base64,${base64}`;
+            }
+        } else {
+            // In local/dev, use filename
+            featuredImage = req.file.filename;
+        }
+    }
 
     const result = await PostServices.updatePostInDB(id, body, featuredImage);
 
