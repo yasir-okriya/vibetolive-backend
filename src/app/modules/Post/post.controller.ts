@@ -49,11 +49,13 @@ const getPaginatedPosts = catchAsync(async (req, res) => {
 
 const uploadImage = catchAsync(async (req, res) => {
     if (!req.file) {
-        return sendResponse(res, {
+        sendResponse(res, {
             statusCode: httpStatus.BAD_REQUEST,
             success: false,
             message: "No image file provided",
+            data: null,
         });
+        return;
     }
 
     // Return the image URL
