@@ -2,26 +2,35 @@ import { IPost } from "./post.interface";
 import { Post } from "./post.model";
 
 const createPostIntoDB = async (body: any, featuredImage: any) => {
+    const { title, slug, excerpt, content, sections, metaTitle, metaDescription, focusKeyword, categories, tags } = body;
 
-
-    const { title, slug, excerpt, content, metaTitle, metaDescription, focusKeyword, categories, tags } = body;
+    // Parse sections if provided as JSON string
+    let parsedSections = sections;
+    if (typeof sections === 'string') {
+        try {
+            parsedSections = JSON.parse(sections);
+        } catch (e) {
+            console.error('Failed to parse sections:', e);
+            parsedSections = [];
+        }
+    }
 
     const newPost: Partial<IPost> = {
         title,
         slug,
         excerpt,
-        content,
+        content, // Keep for backward compatibility
+        sections: parsedSections || [], // New sections-based content
         metaTitle,
         metaDescription,
         focusKeyword,
-        categories: categories?.split(',').map((c: string) => c.trim()),
-        tags: tags?.split(',').map((t: string) => t.trim()),
+        categories: categories?.split(',').map((c: string) => c.trim()).filter((c: string) => c),
+        tags: tags?.split(',').map((t: string) => t.trim()).filter((t: string) => t),
         featuredImage,
     };
 
     const result = await Post.create(newPost);
     return result;
-
 };
 
 
@@ -62,7 +71,7 @@ const getPaginatedPostsFromDB = async (page: number, limit: number) => {
 };
 
 const updatePostInDB = async (id: string, body: any, featuredImage?: string) => {
-    const { title, slug, excerpt, content, metaTitle, metaDescription, focusKeyword, categories, tags } = body;
+    const { title, slug, excerpt, content, sections, metaTitle, metaDescription, focusKeyword, categories, tags } = body;
 
     // Try to find by slug first, then by ID
     let post = await Post.findOne({ slug: id });
@@ -71,18 +80,34 @@ const updatePostInDB = async (id: string, body: any, featuredImage?: string) => 
     }
     if (!post) throw new Error("Post not found");
 
+    // Parse sections if provided as JSON string
+    let parsedSections = sections;
+    if (typeof sections === 'string') {
+        try {
+            parsedSections = JSON.parse(sections);
+        } catch (e) {
+            console.error('Failed to parse sections:', e);
+            parsedSections = undefined; // Don't update if parsing fails
+        }
+    }
+
     // Prepare update data
     const updateData: any = {
         title,
         slug,
         excerpt,
-        content,
+        content, // Keep for backward compatibility
         metaTitle,
         metaDescription,
         focusKeyword,
-        categories: categories?.split(',').map((c: string) => c.trim()),
-        tags: tags?.split(',').map((t: string) => t.trim()),
+        categories: categories?.split(',').map((c: string) => c.trim()).filter((c: string) => c),
+        tags: tags?.split(',').map((t: string) => t.trim()).filter((t: string) => t),
     };
+
+    // Update sections if provided
+    if (parsedSections !== undefined) {
+        updateData.sections = parsedSections;
+    }
 
     // Only update featuredImage if a new one was uploaded
     if (featuredImage) {

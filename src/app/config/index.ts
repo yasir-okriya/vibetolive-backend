@@ -14,4 +14,12 @@ export default {
   jwt_refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN,
   redis_host: process.env.REDIS_HOST,
   redis_port: process.env.REDIS_PORT,
+
+  do_spaces: {
+    endpoint: process.env.DO_SPACES_ENDPOINT,
+    key: process.env.DO_SPACES_KEY,
+    secret: process.env.DO_SPACES_SECRET,
+    bucket: process.env.DO_SPACES_BUCKET,
+    region: process.env.DO_SPACES_REGION,
+  },
 };
